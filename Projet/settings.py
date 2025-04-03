@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'produits',
 ]
 
 MIDDLEWARE = [
@@ -123,6 +124,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+
+# 🔹 MEDIA_URL définit l'URL publique qui permettra d'accéder aux fichiers média (images, vidéos, etc.).
+# Par exemple, une image stockée dans 'media/produits/chaussure.jpg' sera accessible via :
+# http://localhost:8000/media/produits/chaussure.jpg
+MEDIA_URL = '/media/'
+
+# 🔹 MEDIA_ROOT définit le chemin physique où seront enregistrés les fichiers média sur le serveur.
+# Django stockera tous les fichiers uploadés dans ce dossier.
+# Ici, on utilise os.path.join(BASE_DIR, 'media') pour placer ce dossier à la racine du projet.
+# Cela signifie que toutes les images téléchargées seront stockées dans : 
+# /mon_projet/media/
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

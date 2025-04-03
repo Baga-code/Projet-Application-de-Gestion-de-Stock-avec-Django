@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Produits</title>
+</head>
+<body>
+    <h1>Liste des Produits</h1>
+    <ul>
+        {% for produit in produits %}
+            <li>
+                <strong>{{ produit.nom }}</strong> - {{ produit.prix }} F CFA
+                <a href="#">Voir détails</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'ajouter_produit' %}">Ajouter un Produit</a>
+</body>
+</html>
