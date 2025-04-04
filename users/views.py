@@ -14,7 +14,7 @@ def inscription(request):
     else:
         form = FormulaireInscription()
     
-    return render(request, "users/inscription.html",  )
+    return render(request, "users/inscription.html", {"form": form}  )
 
 # 🔹 Vue pour la connexion
 def connexion(request):
