@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .models import Utilisateur
-from .forms import FormulaireInscription
+from .forms import FormulaireInscription , ConnexionForm
 
 # 🔹 Vue pour l'inscription
 def inscription(request):
@@ -19,17 +19,18 @@ def inscription(request):
 # 🔹 Vue pour la connexion
 def connexion(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        utilisateur = authenticate(request, username=username, password=password)
-
-        if utilisateur is not None:
+        form = ConnexionForm(request=request, data=request.POST)
+        if form.is_valid():
+            utilisateur = form.get_user()
             login(request, utilisateur)
-            return rediriger_utilisateur(utilisateur)  # Redirection selon le rôle
+            return rediriger_utilisateur(utilisateur)
         else:
-            return render(request, "users/connexion.html", {"erreur": "Identifiants invalides"})
+            return render(request, "users/connexion.html", {"form": form, "erreur": "Identifiants invalides"})
+    else:
+        form = ConnexionForm()
 
-    return render(request, "users/connexion.html")
+    return render(request, "users/connexion.html", {"form": form})
+
 
 # 🔹 Fonction de redirection selon le rôle
 def rediriger_utilisateur(utilisateur):
@@ -37,8 +38,14 @@ def rediriger_utilisateur(utilisateur):
         return redirect("dashboard_admin")
     else:
         return redirect("dashboard_client")
-
 # 🔹 Vue pour la déconnexion
 def deconnexion(request):
     logout(request)
     return redirect("connexion")
+from django.shortcuts import render
+
+def dashboard_admin(request):
+    return render(request, "users/dashboard_admin.html")
+
+def dashboard_client(request):
+    return render(request, "users/dashboard_client.html")
