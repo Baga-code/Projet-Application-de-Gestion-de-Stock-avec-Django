@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'produits',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +126,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # 🔹 MEDIA_URL définit l'URL publique qui permettra d'accéder aux fichiers média (images, vidéos, etc.).

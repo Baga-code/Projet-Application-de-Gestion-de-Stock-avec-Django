@@ -1,7 +1,209 @@
-{% extends "base/index.html" %}
+{% extends 'base/index.html' %}
+{% load static %}
+
+
+<style>
+  @media (max-width: 768px) {
+  .table td {
+    font-size: 0.85rem;
+  }
+  .carousel-inner {
+    max-width: 100px !important;
+  }
+  .carousel-inner img {
+    max-height: 80px !important;
+  }
+}
+
+</style>
 
 {% block content %}
-  <h2>Tableau de Bord Administrateur</h2>
-  <p>Bienvenue, Admin/Employé !</p>
-  <a href="{% url 'deconnexion' %}">Déconnexion</a>
+
+{% include 'produits/ajout.html' with form=form image_form=image_form %}
+{% include 'produits/modifier.html' %}
+{% include 'produits/supprimer.html' %}
+
+<!-- pour une bonnne afficgae des messages d'erreurs -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} mt-3">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-center fw-bold">🛒 Tableau de bord - Produits</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    {% if not user.is_superuser %}
+    <div class="alert alert-info">Certaines fonctionnalités sont réservées à l’administrateur.</div>
+    {% endif %}
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        {% comment %} On affiche les statistiques {% endcomment %}
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Produits</h5>
+                    <p class="card-text fs-4">{{ stats.nb_produits }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Commandes</h5>
+                    <p class="card-text fs-4">{{ stats.nb_commandes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text fs-4">{{ stats.nb_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Alertes Stock</h5>
+                    <p class="card-text fs-4">{{ stats.nb_alertes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestion des Produits -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-semibold">📦 Liste des produits</h4>
+        {% if user.is_superuser %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">+ Ajouter</button>
+        {% endif %}
+    </div>
+
+    <div class="table-responsive shadow">
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Image</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Date d'ajout</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for produit in produits %}
+              <tr>
+                <td>
+                  {% if produit.images.all %}
+                  <div id="carouselProduit{{ produit.id }}" class="carousel slide" data-bs-ride="false">
+                    <div class="carousel-inner" style="max-width: 150px; margin: auto;"> <!-- Conteneur fixé -->
+                      {% for image in produit.images.all %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block mx-auto rounded"
+                             style="max-height: 120px; width: auto; max-width: 100%; object-fit: cover;"
+                             alt="Image {{ forloop.counter }}">
+                      </div>
+                      {% endfor %}
+                      {% if produit.images.all|length > 1 %}
+                      <button class="carousel-control-prev" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="prev">
+                        ⬅️
+                      </button>
+                      <button class="carousel-control-next" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="next">
+                        ➡️
+                      </button>
+                      {% endif %}
+                    </div>
+                    {% else %}
+                      <span class="text-muted">Aucune image</span>
+                    {% endif %}
+                    </div>
+                   
+                </td>
+            
+                <td>{{ produit.nom }}</td>
+                <td>{{ produit.categorie.nom }}</td>
+                <td>{{ produit.prix }} FCFA</td>
+                <td>{{ produit.stock }}</td>
+                <td>{{ produit.date_ajout|date:"d/m/Y" }}</td>
+                <td>
+                  <a href="{% url 'modifier_produit' produit.id %}" class="btn btn-sm btn-outline-primary">✏️</a>
+                  {% if user.is_superuser %}
+                  <a href="{% url 'supprimer_produit' produit.id %}" class="btn btn-sm btn-outline-danger">🗑️</a>
+                  {% endif %}
+              </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 🔽 Modal d’ajout produit -->
+    <div class="modal fade" id="modalAjoutProduit" tabindex="-1" aria-labelledby="modalAjoutProduitLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" enctype="multipart/form-data" action="{% url 'ajouter_produit' %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un nouveau produit</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ formulaire.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Enregistrer</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    $("#formAjoutProduit").on("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+  
+      $.ajax({
+        url: "{% url 'ajouter_produit' %}",
+        method: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          if (response.success) {
+            $("#modalAjoutProduit").modal('hide');
+            alert("Produit ajouté !");
+            location.reload(); // Pour tester rapidement
+          } else {
+            alert("Erreur : " + response.message);
+          }
+        },
+        error: function(xhr) {
+          alert("Erreur serveur : " + xhr.statusText);
+        }
+      });
+    });
+  });
+  </script>
+  
+  
 {% endblock %}

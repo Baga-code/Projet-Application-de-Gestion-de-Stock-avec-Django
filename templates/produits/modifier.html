@@ -1,0 +1,45 @@
+<!-- Modal de modification -->
+<div class="modal fade" id="modalModifier" tabindex="-1" aria-labelledby="modalModifierLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <form id="formModifier" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="modalModifierLabel">Modifier le produit</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editNom" class="form-label">Nom</label>
+              <input type="text" name="nom" id="editNom" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPrix" class="form-label">Prix</label>
+              <input type="number" name="prix" id="editPrix" step="0.01" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editStock" class="form-label">Stock</label>
+              <input type="number" name="stock" id="editStock" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="editCategorie" class="form-label">Catégorie</label>
+              <select name="categorie" id="editCategorie" class="form-select">
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editImage" class="form-label">Image (optionnel)</label>
+              <input type="file" name="image" id="editImage" class="form-control">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Modifier</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  

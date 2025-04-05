@@ -1,25 +1,70 @@
 {% extends 'base/index.html' %}
+{% load widget_tweaks %}
 {% load static %}
 
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+
+  .card {
+    border-radius: 15px;
+  }
+
+  .form-label {
+    font-weight: 500;
+  }
+
+  .is-invalid {
+    border-color: #dc3545;
+  }
+
+  .invalid-feedback {
+    display: block;
+  }
+
+  .illustration {
+    background: url("{% static 'images/login.png' %}") no-repeat center center;
+    background-size: cover;
+    min-height: 100%;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+  }
+
+  @media (max-width: 767px) {
+    .illustration {
+      display: none;
+    }
+  }
+</style>
+
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow-lg">
-        <div class="card-header text-center bg-primary text-white">
-          <h3>Inscription</h3>
-        </div>
-        <div class="card-body">
+    <div class="col-md-10">
+      <div class="row shadow-lg bg-white rounded overflow-hidden">
+        <!-- IMAGE -->
+        <div class="col-md-6 illustration"></div>
+
+        <!-- FORMULAIRE -->
+        <div class="col-md-6 p-5">
+          <div class="text-center mb-4">
+            <img src="{% static 'images/ujkz.jpg' %}" alt="Logo Université" width="80">
+            <h3 class="mt-2 text-primary">Créer un compte</h3>
+          </div>
           <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             {% for field in form %}
               <div class="mb-3">
                 <label class="form-label">{{ field.label }}</label>
-                {{ field }}
+                {{ field|add_class:'form-control' }}
                 {% if field.errors %}
-                  <div class="text-danger">{{ field.errors }}</div>
+                  {{ field|add_class:'is-invalid' }}
+                  <div class="invalid-feedback">
+                    {{ field.errors|striptags }}
+                  </div>
                 {% endif %}
               </div>
             {% endfor %}
@@ -27,10 +72,9 @@
               <button type="submit" class="btn btn-success">S'inscrire</button>
             </div>
           </form>
-        </div>
-        <div class="card-footer text-center">
-          <p>Déjà inscrit ? <a  href="{% url 'connexion' %}">Se connecter</a></p>
-           
+          <div class="text-center mt-3">
+            <p>Déjà inscrit ? <a href="{% url 'connexion' %}">Se connecter</a></p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,14 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from .models import Utilisateur
 from .forms import FormulaireInscription , ConnexionForm
+from django.shortcuts import render
+from produits.models import Produit, Categorie   
+from produits.forms import ProduitForm  , ImageProduitForm
+#from commandes.models import Commande  # Idem
+
+
+User = get_user_model()
 
 # 🔹 Vue pour l'inscription
 def inscription(request):
@@ -42,10 +49,32 @@ def rediriger_utilisateur(utilisateur):
 def deconnexion(request):
     logout(request)
     return redirect("connexion")
-from django.shortcuts import render
+
 
 def dashboard_admin(request):
-    return render(request, "users/dashboard_admin.html")
+    produits = Produit.objects.all()
+    categories = Categorie.objects.all()
+    users = User.objects.all()
+    form = ProduitForm()  # ✅ formulaire vierge pour la modale
+
+    stats = {
+        'nb_produits': produits.count(),
+        'nb_commandes': 0,
+        'nb_users': users.count(),
+        'nb_alertes': produits.filter(stock__lt=5).count()
+    }
+
+    context = {
+    'produits': produits,
+    'categories': categories,
+    'stats': stats,
+    'form': ProduitForm(),
+    'image_form': ImageProduitForm()
+}
+    
+
+    return render(request, "users/dashboard_admin.html", context)
+
 
 def dashboard_client(request):
     return render(request, "users/dashboard_client.html")
