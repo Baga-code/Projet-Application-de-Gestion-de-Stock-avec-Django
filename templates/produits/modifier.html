@@ -1,45 +1,54 @@
-<!-- Modal de modification -->
-<div class="modal fade" id="modalModifier" tabindex="-1" aria-labelledby="modalModifierLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <form id="formModifier" method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="modalModifierLabel">Modifier le produit</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="editNom" class="form-label">Nom</label>
-              <input type="text" name="nom" id="editNom" class="form-control" required>
+{% for produit in produits %}
+<!-- MODAL MODIFICATION -->
+<div class="modal fade" id="modalModifierProduit{{ produit.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content shadow rounded">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">📝 Modifier le produit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'modifier_produit' produit.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom</label>
+              <input type="text" class="form-control" name="nom" value="{{ produit.nom }}" required>
             </div>
-            <div class="mb-3">
-              <label for="editPrix" class="form-label">Prix</label>
-              <input type="number" name="prix" id="editPrix" step="0.01" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="editStock" class="form-label">Stock</label>
-              <input type="number" name="stock" id="editStock" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="editCategorie" class="form-label">Catégorie</label>
-              <select name="categorie" id="editCategorie" class="form-select">
+            <div class="col-md-6">
+              <label class="form-label">Catégorie</label>
+              <select class="form-select" name="categorie">
                 {% for cat in categories %}
-                  <option value="{{ cat.id }}">{{ cat.nom }}</option>
+                  <option value="{{ cat.id }}" {% if cat.id == produit.categorie.id %}selected{% endif %}>{{ cat.nom }}</option>
                 {% endfor %}
               </select>
             </div>
-            <div class="mb-3">
-              <label for="editImage" class="form-label">Image (optionnel)</label>
-              <input type="file" name="image" id="editImage" class="form-control">
+            <div class="col-md-6">
+              <label class="form-label">Prix</label>
+              <input type="number" class="form-control" name="prix" value="{{ produit.prix }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Stock</label>
+              <input type="number" class="form-control" name="stock" value="{{ produit.stock }}" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" name="description">{{ produit.description }}</textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Image</label>
+              <input type="file" class="form-control" name="image">
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Modifier</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
     </div>
   </div>
-  
+</div>
+{% endfor %}
+
+ 

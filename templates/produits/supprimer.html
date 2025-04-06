@@ -1,22 +1,23 @@
-<!-- Modal de suppression -->
-<div class="modal fade" id="modalSupprimer" tabindex="-1" aria-labelledby="modalSupprimerLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <form id="formSupprimer" method="post">
-          {% csrf_token %}
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="modalSupprimerLabel">Confirmer la suppression</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-          </div>
-          <div class="modal-body">
-            <p id="supprimerMessage"></p>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-danger">Supprimer</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-          </div>
-        </form>
+{% for produit in produits %}
+<!-- MODAL SUPPRESSION -->
+<div class="modal fade" id="modalSupprimerProduit{{ produit.id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content shadow rounded">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">❌ Supprimer le produit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+      <form method="POST" action="{% url 'supprimer_produit' produit.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p>Voulez-vous vraiment supprimer <strong>{{ produit.nom }}</strong> ? Cette action est irréversible.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger">Supprimer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
     </div>
   </div>
-  
+</div>
+{% endfor %}

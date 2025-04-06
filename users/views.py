@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from .models import Utilisateur
-from .forms import FormulaireInscription , ConnexionForm
+from .forms import *
 from django.shortcuts import render
-from produits.models import Produit, Categorie   
-from produits.forms import ProduitForm  , ImageProduitForm
+from produits.models import *
+from produits.forms import *
 #from commandes.models import Commande  # Idem
 
 

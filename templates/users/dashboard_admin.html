@@ -1,9 +1,9 @@
+
 {% extends 'base/index.html' %}
 {% load static %}
 
-
 <style>
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
   .table td {
     font-size: 0.85rem;
   }
@@ -14,24 +14,12 @@
     max-height: 80px !important;
   }
 }
-
 </style>
 
 {% block content %}
-
 {% include 'produits/ajout.html' with form=form image_form=image_form %}
-{% include 'produits/modifier.html' %}
+{% include 'produits/modifier.html' with form=form image_form=image_form %}
 {% include 'produits/supprimer.html' %}
-
-<!-- pour une bonnne afficgae des messages d'erreurs -->
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} mt-3">
-      {{ message }}
-    </div>
-  {% endfor %}
-{% endif %}
-
 
 <div class="container mt-4">
     <h2 class="mb-4 text-center fw-bold">🛒 Tableau de bord - Produits</h2>
@@ -43,12 +31,11 @@
     {% endif %}
 
     {% if not user.is_superuser %}
-    <div class="alert alert-info">Certaines fonctionnalités sont réservées à l’administrateur.</div>
+      <div class="alert alert-info">Certaines fonctionnalités sont réservées à l’administrateur.</div>
     {% endif %}
 
     <!-- Statistiques -->
     <div class="row mb-4">
-        {% comment %} On affiche les statistiques {% endcomment %}
         <div class="col-md-3">
             <div class="card text-white bg-primary shadow">
                 <div class="card-body">
@@ -83,127 +70,128 @@
         </div>
     </div>
 
-    <!-- Gestion des Produits -->
+    <!-- Barre de recherche -->
+    <form method="get" class="mb-3 d-flex gap-2">
+        <input type="text" name="q" placeholder="🔎 Rechercher un produit" class="form-control w-50" value="{{ request.GET.q }}">
+        <select name="categorie" class="form-select w-25">
+            <option value="">Toutes catégories</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}" {% if request.GET.categorie == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.nom }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+    </form>
+
+    <!-- Actions -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-semibold">📦 Liste des produits</h4>
-        {% if user.is_superuser %}
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">+ Ajouter</button>
-        {% endif %}
+        <div>
+            {% if user.is_superuser %}
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">+ Ajouter</button>
+            {% endif %}
+            <a href="{% url 'export_csv' %}" class="btn btn-outline-dark mx-1">📤 Export CSV</a>
+            <a href="{% url 'export_pdf' %}" class="btn btn-outline-danger">📄 Export PDF</a>
+        </div>
     </div>
 
+    <!-- Table des produits -->
     <div class="table-responsive shadow">
-        <table class="table table-hover table-bordered">
-            <thead class="table-dark text-center">
+        <table class="table table-hover table-bordered text-center align-middle">
+            <thead class="table-dark">
                 <tr>
                     <th>Image</th>
                     <th>Nom</th>
                     <th>Catégorie</th>
                     <th>Prix</th>
                     <th>Stock</th>
-                    <th>Date d'ajout</th>
-                    <th>Actions</th>
+                    {% if user.is_superuser %}<th>Actions</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
-              {% for produit in produits %}
-              <tr>
-                <td>
-                  {% if produit.images.all %}
-                  <div id="carouselProduit{{ produit.id }}" class="carousel slide" data-bs-ride="false">
-                    <div class="carousel-inner" style="max-width: 150px; margin: auto;"> <!-- Conteneur fixé -->
-                      {% for image in produit.images.all %}
-                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <img src="{{ image.image.url }}" class="d-block mx-auto rounded"
-                             style="max-height: 120px; width: auto; max-width: 100%; object-fit: cover;"
-                             alt="Image {{ forloop.counter }}">
+                {% for produit in produits %}
+                <tr>
+                  <td>
+                    {% if produit.images.all %}
+                    <div id="carouselProduit{{ produit.id }}" class="carousel slide" data-bs-ride="false">
+                      <div class="carousel-inner" style="max-width: 150px; margin: auto;"> <!-- Conteneur fixé -->
+                        {% for image in produit.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                          <img src="{{ image.image.url }}" class="d-block mx-auto rounded"
+                               style="max-height: 120px; width: auto; max-width: 100%; object-fit: cover;"
+                               alt="Image {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
+                        {% if produit.images.all|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="prev">
+                          ⬅️
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="next">
+                          ➡️
+                        </button>
+                        {% endif %}
                       </div>
-                      {% endfor %}
-                      {% if produit.images.all|length > 1 %}
-                      <button class="carousel-control-prev" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="prev">
-                        ⬅️
-                      </button>
-                      <button class="carousel-control-next" type="button" data-bs-target="#carouselProduit{{ produit.id }}" data-bs-slide="next">
-                        ➡️
-                      </button>
+                      {% else %}
+                        <span class="text-muted">Aucune image</span>
                       {% endif %}
-                    </div>
+                      </div>
+                     
+                  </td>
+              
+                  <td>{{ produit.nom }}</td>
+                  <td>{{ produit.categorie.nom }}</td>
+                  <td>{{ produit.prix }} FCFA</td>
+                  <td>
+                    {% if produit.stock <= 5 %}
+                        <span class="badge bg-danger">{{ produit.stock }}</span>
                     {% else %}
-                      <span class="text-muted">Aucune image</span>
+                        <span class="badge bg-success">{{ produit.stock }}</span>
                     {% endif %}
-                    </div>
-                   
                 </td>
-            
-                <td>{{ produit.nom }}</td>
-                <td>{{ produit.categorie.nom }}</td>
-                <td>{{ produit.prix }} FCFA</td>
-                <td>{{ produit.stock }}</td>
-                <td>{{ produit.date_ajout|date:"d/m/Y" }}</td>
+                  
                 <td>
-                  <a href="{% url 'modifier_produit' produit.id %}" class="btn btn-sm btn-outline-primary">✏️</a>
+                  <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalModifierProduit{{ produit.id }}">
+                    Modifier
+                  </button>
                   {% if user.is_superuser %}
-                  <a href="{% url 'supprimer_produit' produit.id %}" class="btn btn-sm btn-outline-danger">🗑️</a>
+                  <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerProduit{{ produit.id }}">
+                    Supprimer
+                  </button>
                   {% endif %}
               </td>
-              </tr>
-              {% endfor %}
+                
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
-
-    <!-- 🔽 Modal d’ajout produit -->
-    <div class="modal fade" id="modalAjoutProduit" tabindex="-1" aria-labelledby="modalAjoutProduitLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form method="POST" enctype="multipart/form-data" action="{% url 'ajouter_produit' %}">
-                    {% csrf_token %}
-                    <div class="modal-header">
-                        <h5 class="modal-title">Ajouter un nouveau produit</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                    </div>
-                    <div class="modal-body">
-                        {{ formulaire.as_p }}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Enregistrer</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <div class="d-flex justify-content-center mt-3">
+      <nav>
+          <ul class="pagination">
+              {% if produits.has_previous %}
+                  <li class="page-item"><a class="page-link" href="?page={{ produits.previous_page_number }}">Précédent</a></li>
+              {% endif %}
+              {% for i in produits.paginator.page_range %}
+                  <li class="page-item {% if produits.number == i %}active{% endif %}">
+                      <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                  </li>
+              {% endfor %}
+              {% if produits.has_next %}
+                  <li class="page-item"><a class="page-link" href="?page={{ produits.next_page_number }}">Suivant</a></li>
+              {% endif %}
+          </ul>
+      </nav>
+  </div>
 </div>
-{% endblock %}
-
 {% block scripts %}
+{% if request.GET.modifier %}
 <script>
-  $(document).ready(function() {
-    $("#formAjoutProduit").on("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-  
-      $.ajax({
-        url: "{% url 'ajouter_produit' %}",
-        method: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function(response) {
-          if (response.success) {
-            $("#modalAjoutProduit").modal('hide');
-            alert("Produit ajouté !");
-            location.reload(); // Pour tester rapidement
-          } else {
-            alert("Erreur : " + response.message);
-          }
-        },
-        error: function(xhr) {
-          alert("Erreur serveur : " + xhr.statusText);
-        }
-      });
-    });
+  document.addEventListener("DOMContentLoaded", function () {
+    let modal = new bootstrap.Modal(document.getElementById('modalModifierProduit'));
+    modal.show();
   });
-  </script>
-  
-  
+</script>
+{% endif %}
+{% endblock %}
 {% endblock %}
