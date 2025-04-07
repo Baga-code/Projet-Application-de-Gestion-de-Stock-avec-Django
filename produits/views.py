@@ -40,7 +40,7 @@ def ajouter_produit(request):
                     stock_actuel=produit.stock
                 )
 
-            messages.success(request, "Produit ajouté avec succès.")
+            messages.success(request, "Produit ajouté avec succès ✅ .")
             return redirect("liste_produits")
 
         messages.error(request, "Erreur dans le formulaire.")
@@ -87,7 +87,7 @@ def modifier_produit(request, produit_id):
         form = ProduitForm(request.POST, instance=produit)
         if form.is_valid():
             form.save()
-            messages.success(request, "Produit modifié avec succès.")
+            messages.success(request, "Produit modifié avec succès ✅.")
             return redirect('liste_produits')
     else:
         form = ProduitForm(instance=produit)
@@ -98,12 +98,11 @@ def supprimer_produit(request, produit_id):
     if request.method == "POST":
         nom_produit = produit.nom  # On garde le nom pour le message après suppression
         produit.delete()
-        messages.success(request, f"Le produit '{nom_produit}' a été supprimé avec succès.")
+        messages.success(request, f"Le produit '{nom_produit}' a été supprimé avec succès ✅.")
         return redirect('liste_produits')
     return render(request, 'produits/supprimer.html', {'produit': produit})
 
 def export_csv(request):
-    messages.success(request, "CSV exporté avec succès.")
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="produits.csv"'
 
@@ -135,7 +134,3 @@ def export_pdf(request):
     if pisa_status.err:
         return HttpResponse('Erreur lors de la génération du PDF', status=500)
     return response
-
-
-
-

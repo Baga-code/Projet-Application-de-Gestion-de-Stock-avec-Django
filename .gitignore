@@ -1,0 +1,21 @@
+# Environnement virtuel
+env/
+venv/
+
+# Fichiers de cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de données SQLite
+db.sqlite3
+
+# Fichiers de migration (optionnel à ignorer si tu les régénères)
+*.sqlite3
+
+# Fichiers d’environnement
+.env
+
+# Dossiers système
+.DS_Store
+Thumbs.db

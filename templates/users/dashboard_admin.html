@@ -71,28 +71,54 @@
     </div>
 
     <!-- Barre de recherche -->
-    <form method="get" class="mb-3 d-flex gap-2">
-        <input type="text" name="q" placeholder="🔎 Rechercher un produit" class="form-control w-50" value="{{ request.GET.q }}">
-        <select name="categorie" class="form-select w-25">
-            <option value="">Toutes catégories</option>
-            {% for c in categories %}
-            <option value="{{ c.id }}" {% if request.GET.categorie == c.id|stringformat:"s" %}selected{% endif %}>
-                {{ c.nom }}
-            </option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-primary">Filtrer</button>
-    </form>
+    <!-- Barre de recherche -->
+<form method="get" class="mb-3 d-flex flex-wrap gap-2">
 
+  <input type="text" name="q" placeholder="🔎 Rechercher un produit" class="form-control w-50" value="{{ request.GET.q }}">
+
+  <select name="categorie" class="form-select w-25">
+      <option value=""> 📂Toutes catégories</option>
+      {% for c in categories %}
+      <option value="{{ c.id }}" {% if request.GET.categorie == c.id|stringformat:"s" %}selected{% endif %}>
+          {{ c.nom }}
+      </option>
+      {% endfor %}
+  </select>
+
+  <!--  Tri -->
+  <select name="tri" class="form-select w-25">
+      <option value="">↕️ Trier par</option>
+      <option value="nom_asc" {% if request.GET.tri == "nom_asc" %}selected{% endif %}>Nom (A → Z)</option>
+      <option value="nom_desc" {% if request.GET.tri == "nom_desc" %}selected{% endif %}>Nom (Z → A)</option>
+      <option value="prix_asc" {% if request.GET.tri == "prix_asc" %}selected{% endif %}>Prix (Croissant)</option>
+      <option value="prix_desc" {% if request.GET.tri == "prix_desc" %}selected{% endif %}>Prix (Décroissant)</option>
+  </select>
+
+  <!--  Filtre stock -->
+  <select name="stock" class="form-select w-25">
+      <option value="">🧮 Stock (Tous)</option>
+      <option value="rupture" {% if request.GET.stock == "rupture" %}selected{% endif %}>Rupture (0)</option>
+      <option value="faible" {% if request.GET.stock == "faible" %}selected{% endif %}>Faible (< 5)</option>
+  </select>
+
+  <button type="submit" class="btn btn-primary">Appliquer</button>
+
+  <!--  Bouton reset -->
+  <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary">🔄Réinitialiser</a>
+
+</form>
+
+
+      
     <!-- Actions -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-semibold">📦 Liste des produits</h4>
         <div>
             {% if user.is_superuser %}
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">+ Ajouter</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAjoutProduit">➕ Ajouter</button>
             {% endif %}
             <a href="{% url 'export_csv' %}" class="btn btn-outline-dark mx-1">📤 Export CSV</a>
-            <a href="{% url 'export_pdf' %}" class="btn btn-outline-danger">📄 Export PDF</a>
+            <a href="{% url 'export_pdf' %}" class="btn btn-outline-dark">📄 Export PDF</a>
         </div>
     </div>
 
@@ -152,11 +178,11 @@
                   
                 <td>
                   <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalModifierProduit{{ produit.id }}">
-                    Modifier
+                    📝 Modifier
                   </button>
                   {% if user.is_superuser %}
                   <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalSupprimerProduit{{ produit.id }}">
-                    Supprimer
+                    ❌ Supprimer
                   </button>
                   {% endif %}
               </td>

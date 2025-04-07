@@ -40,6 +40,8 @@ class HistoriqueProduit(models.Model):
         ('ajout', 'Ajout'),
         ('modification', 'Modification'),
         ('suppression', 'Suppression'),
+        ('exporter en CSV', 'Exporter en CSV'),
+        ('exporter en PDF', 'Exporter en PDF'),
     )
 
     utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
