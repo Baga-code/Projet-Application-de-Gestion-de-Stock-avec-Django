@@ -1,21 +1,17 @@
 # Environnement virtuel
-env/
-venv/
+Evirtuel/
 
 # Fichiers de cache Python
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Base de données SQLite
+# Base de données
 db.sqlite3
 
-# Fichiers de migration (optionnel à ignorer si tu les régénères)
-*.sqlite3
-
-# Fichiers d’environnement
+# Environnement
 .env
 
-# Dossiers système
+# Fichiers système
 .DS_Store
 Thumbs.db
