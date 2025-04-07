@@ -24,9 +24,12 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Prix</label>
-              <input type="number" class="form-control" name="prix" value="{{ produit.prix }}" required>
+              <label class="form-label">Prix (FCFA)</label>
+              <input type="number" step="0.01" class="form-control" name="prix" 
+                     value="{{ produit.prix|floatformat:0|cut:',' }}" required>
             </div>
+            
+            
             <div class="col-md-6">
               <label class="form-label">Stock</label>
               <input type="number" class="form-control" name="stock" value="{{ produit.stock }}" required>

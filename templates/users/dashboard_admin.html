@@ -188,6 +188,11 @@
               </td>
                 
                 </tr>
+                {% empty %}
+    <div class="alert alert-info text-center w-100 mt-3">
+    📦 Aucun produit à afficher. Essayez de modifier vos filtres ou d’ajouter un nouveau produit.
+</div>
+
                 {% endfor %}
             </tbody>
         </table>

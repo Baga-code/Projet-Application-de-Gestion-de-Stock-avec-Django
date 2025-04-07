@@ -4,9 +4,12 @@ from .models import *
 from django.core.paginator import Paginator
 from django.contrib import messages
 import csv
+import json
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
+
 
  
 def ajouter_produit(request):
@@ -64,14 +67,25 @@ def liste_produits(request):
     form_image = ImageProduitForm()
     categories = Categorie.objects.all()
 
-    # Construction des statistiques
+    # Statistiques
     User = get_user_model()
     stats = {
         'nb_produits': Produit.objects.count(),
-        'nb_commandes': 0,  # si tu as un modèle Commande, remplace 0 par Commande.objects.count()
+        'nb_commandes': 0,  # À adapter si tu ajoutes le modèle Commande
         'nb_users': User.objects.count(),
         'nb_alertes': AlerteStock.objects.count(),
     }
+
+    # 🔍 Préparation des données pour le graphique
+    labels = []
+    stocks = []
+    couleurs = []
+
+    for cat in categories:
+        total_stock = cat.produits.aggregate(stock=Sum('stock'))['stock'] or 0
+        labels.append(cat.nom)
+        stocks.append(total_stock)
+        couleurs.append("red" if total_stock < 5 else "#4e73df")  # rouge si stock < 5
 
     return render(request, 'users/dashboard_admin.html', {
         'produits': produits,
@@ -79,18 +93,41 @@ def liste_produits(request):
         'form_image': form_image,
         'categories': categories,
         'stats': stats,
+        'labels': json.dumps(labels),
+        'stocks': json.dumps(stocks),
+        'couleurs': json.dumps(couleurs),
     })
+
+
 
 def modifier_produit(request, produit_id):
     produit = get_object_or_404(Produit, id=produit_id)
+
     if request.method == "POST":
         form = ProduitForm(request.POST, instance=produit)
         if form.is_valid():
             form.save()
+
+            if produit.stock <= 5:
+                AlerteStock.objects.update_or_create(
+                    produit=produit,
+                    defaults={"stock_actuel": produit.stock}
+                )
+            else:
+                AlerteStock.objects.filter(produit=produit).delete()
+
+            # Ajout à l’historique
+            HistoriqueProduit.objects.create(
+                utilisateur=request.user,
+                produit=produit,
+                action="modification"
+            )
+
             messages.success(request, "Produit modifié avec succès ✅.")
-            return redirect('liste_produits')
+            return redirect('liste_produits')  
     else:
         form = ProduitForm(instance=produit)
+
     return render(request, 'produits/modifier.html', {'form': form, 'produit': produit})
 
 def supprimer_produit(request, produit_id):
@@ -98,6 +135,12 @@ def supprimer_produit(request, produit_id):
     if request.method == "POST":
         nom_produit = produit.nom  # On garde le nom pour le message après suppression
         produit.delete()
+        # Ajout à l’historique
+        HistoriqueProduit.objects.create(
+            utilisateur=request.user,
+            produit=produit,
+            action="suppression"
+        )
         messages.success(request, f"Le produit '{nom_produit}' a été supprimé avec succès ✅.")
         return redirect('liste_produits')
     return render(request, 'produits/supprimer.html', {'produit': produit})
@@ -112,6 +155,12 @@ def export_csv(request):
     for produit in Produit.objects.all():
         writer.writerow([produit.nom, produit.prix, produit.stock])
 
+    # Ajout à l’historique
+    HistoriqueProduit.objects.create(
+        utilisateur=request.user,
+        produit=produit,
+        action="exporter en CSV"
+    )
     return response
 
 def export_pdf(request):
@@ -129,6 +178,8 @@ def export_pdf(request):
 
     # Génération du PDF
     pisa_status = pisa.CreatePDF(html, dest=response)
+
+    
     
 
     if pisa_status.err:
