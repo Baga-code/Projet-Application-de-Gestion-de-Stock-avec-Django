@@ -23,12 +23,36 @@
 
 <div class="container mt-4">
     <h2 class="mb-4 text-center fw-bold">🛒 Tableau de bord - Produits</h2>
-
+    <!-- Messages  de confirmation ou l'erreur-->
     {% if messages %}
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
       {% endfor %}
     {% endif %}
+
+    {% if alerte_popup %}
+    <!-- Modal d'alerte stock faible -->
+    <div class="modal fade" id="stockAlertModal" tabindex="-1" aria-labelledby="stockAlertLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="stockAlertLabel">⚠️ Alerte Stock Faible</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            {{ stats.nb_alertes }} produit(s) ont un stock inférieur ou égal à 5.<br>
+            Veuillez envisager un réapprovisionnement.
+          </div>
+          <div class="modal-footer">
+            <a href="?stock=faible" class="btn btn-warning">Voir les produits concernés</a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+
 
     {% if not user.is_superuser %}
       <div class="alert alert-info">Certaines fonctionnalités sont réservées à l’administrateur.</div>
@@ -70,7 +94,7 @@
         </div>
     </div>
 
-    <!-- Barre de recherche -->
+     
     <!-- Barre de recherche -->
 <form method="get" class="mb-3 d-flex flex-wrap gap-2">
 
@@ -214,15 +238,37 @@
           </ul>
       </nav>
   </div>
+  <div class="container my-5 d-flex justify-content-center">
+    <div class="card shadow-lg p-4 w-100" style="max-width: 800px;">
+      <h5 class="text-center mb-4">Stock actuel par produit</h5>
+      <canvas id="stockChart"
+        data-labels='{{ labels|safe }}'
+        data-stocks='{{ stocks|safe }}'
+        data-colors='{{ colors|safe }}'>
+        </canvas>
+    </div>
+  </div>
+  
 </div>
 {% block scripts %}
-{% if request.GET.modifier %}
+<!-- Stock Alert Modal avec délai -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    let modal = new bootstrap.Modal(document.getElementById('modalModifierProduit'));
-    modal.show();
+  document.addEventListener('DOMContentLoaded', function () {
+    const stockModalEl = document.getElementById('stockAlertModal');
+    if (stockModalEl) {
+      const stockModal = new bootstrap.Modal(stockModalEl);
+      
+      // On attend 2 secondes avant d'afficher le modal
+      setTimeout(() => {
+        stockModal.show();
+      }, 2000);  // 2000 ms = 2 secondes
+    }
   });
 </script>
-{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{% static 'js/dashbord.js' %}"></script>
+
 {% endblock %}
 {% endblock %}

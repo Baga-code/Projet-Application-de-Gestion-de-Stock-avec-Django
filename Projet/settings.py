@@ -133,6 +133,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
+
+
 # 🔹 MEDIA_URL définit l'URL publique qui permettra d'accéder aux fichiers média (images, vidéos, etc.).
 # Par exemple, une image stockée dans 'media/produits/chaussure.jpg' sera accessible via :
 # http://localhost:8000/media/produits/chaussure.jpg
