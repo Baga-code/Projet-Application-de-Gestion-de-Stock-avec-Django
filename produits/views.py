@@ -148,7 +148,7 @@ def export_pdf(request):
 
 
 
-@login_required
+@login_required(login_url='connexion')
 def passer_commande(request):
     if request.method == 'POST':
         form = CommandeForm(request.POST)
@@ -176,7 +176,7 @@ def passer_commande(request):
     return render(request, 'commandes/passer_commande.html', {'form': form})
 
 
- 
+@login_required(login_url='connexion') 
 def liste_commandes(request):
     commandes = Commande.objects.filter(utilisateur=request.user).order_by('-date_commande')
     return render(request, 'commandes/liste_commande.html', {'commandes': commandes})

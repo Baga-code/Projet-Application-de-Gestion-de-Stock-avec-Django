@@ -16,6 +16,9 @@ User = get_user_model()
 
 #  Vue pour l'inscription
 def inscription(request):
+    if request.user.is_authenticated:
+        return rediriger_utilisateur(request.user)  # redirige vers dashboard si l'utilisateur est connecté
+    
     if request.method == "POST":
         form = FormulaireInscription(request.POST)
         if form.is_valid():
@@ -29,6 +32,9 @@ def inscription(request):
 
 #  Vue pour la connexion
 def connexion(request):
+    if request.user.is_authenticated:
+        return rediriger_utilisateur(request.user)  # redirige vers dashboard si l'utilisateur est connecté
+    
     if request.method == "POST":
         form = ConnexionForm(request=request, data=request.POST)
         if form.is_valid():
@@ -50,7 +56,7 @@ def rediriger_utilisateur(utilisateur):
     else:
         return redirect("dashboard_client")
     
-@login_required
+@login_required(login_url='connexion')
 def liste_utilisateurs(request):
     utilisateurs = Utilisateur.objects.all()
 
@@ -95,7 +101,7 @@ def deconnexion(request):
     return redirect("connexion")
 
  
-
+@login_required(login_url='connexion')
 def dashboard_admin(request):
     produits = Produit.objects.all()
     categories = Categorie.objects.all()
@@ -165,12 +171,12 @@ def dashboard_admin(request):
     return render(request, "users/dashboard_admin.html", context)
 
 
-
+@login_required(login_url='connexion')
 def dashboard_client(request):
     return render(request, "users/dashboard_client.html") 
 
 
-@login_required
+@login_required(login_url='connexion')
 def historique_actions(request):
     historique = HistoriqueProduit.objects.select_related('utilisateur', 'produit').order_by('-date_action')
     return render(request, "admin/historique_actions.html", {
