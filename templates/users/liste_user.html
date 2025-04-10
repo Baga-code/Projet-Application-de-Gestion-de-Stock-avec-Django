@@ -1,0 +1,56 @@
+{% extends "base/index.html" %}
+{% block title %}Liste des utilisateurs{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="text-primary mb-4">👥 Liste des utilisateurs</h2>
+
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Téléphone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in utilisateurs %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if peut_modifier %}
+                        <form method="post" action="{% url 'changer_role_utilisateur' user.id %}">
+                            {% csrf_token %}
+                            <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                                {% for code, label in user.ROLES %}
+                                    <option value="{{ code }}" {% if user.role == code %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                        {% else %}
+                            {{ user.get_role_display }}
+                        {% endif %}
+                    </td>
+                    <td>{{ user.telephone }}</td>
+                    <td>
+                        {% if peut_modifier and request.user != user %}
+                            <form method="post" action="{% url 'supprimer_utilisateur' user.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Supprimer</button>
+                            </form>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

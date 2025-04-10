@@ -1,0 +1,28 @@
+{% extends "base/index.html" %}
+{% block title %}Passer une commande{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="mb-4 text-primary">🛒 Passer une commande</h2>
+        
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="id_produit">Produit</label>
+                {{ form.produit }}
+            </div>
+            <div class="form-group mb-3">
+                <label for="id_quantite">Quantité</label>
+                {{ form.quantite }}
+            </div>
+            <button type="submit" class="btn btn-success">✅ Valider la commande</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

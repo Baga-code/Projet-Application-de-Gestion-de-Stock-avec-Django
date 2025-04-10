@@ -1,0 +1,32 @@
+{% extends "base/index.html" %}
+{% block title %}Mes commandes{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="mb-4 text-primary">📦 Mes commandes</h2>
+
+        {% if commandes %}
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cmd in commandes %}
+                        <tr>
+                            <td>{{ cmd.date_commande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ cmd.produit.nom }}</td>
+                            <td>{{ cmd.quantite }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">Aucune commande enregistrée.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
