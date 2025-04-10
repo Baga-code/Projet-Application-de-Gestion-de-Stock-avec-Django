@@ -1,19 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from .models import Utilisateur
 from .forms import *
-from django.shortcuts import render
 from produits.models import *
 from produits.forms import *
 from django.db.models import Q  
 from django.core.paginator import Paginator
 from django.contrib import messages
-#from commandes.models import Commande  # Idem
+import json
+from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
 
 
 User = get_user_model()
 
-# 🔹 Vue pour l'inscription
+#  Vue pour l'inscription
 def inscription(request):
     if request.method == "POST":
         form = FormulaireInscription(request.POST)
@@ -26,7 +27,7 @@ def inscription(request):
     
     return render(request, "users/inscription.html", {"form": form}  )
 
-# 🔹 Vue pour la connexion
+#  Vue pour la connexion
 def connexion(request):
     if request.method == "POST":
         form = ConnexionForm(request=request, data=request.POST)
@@ -48,6 +49,46 @@ def rediriger_utilisateur(utilisateur):
         return redirect("dashboard_admin")
     else:
         return redirect("dashboard_client")
+    
+@login_required
+def liste_utilisateurs(request):
+    utilisateurs = Utilisateur.objects.all()
+
+    # Vérifie si l'utilisateur connecté peut modifier
+    peut_modifier = request.user.is_superuser
+
+    return render(request, "users/liste_user.html", {
+        "utilisateurs": utilisateurs,
+        "peut_modifier": peut_modifier,
+    })
+
+@login_required
+def changer_role_utilisateur(request, utilisateur_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("Vous n'avez pas la permission.")
+
+    utilisateur = get_object_or_404(Utilisateur, id=utilisateur_id)
+    nouveau_role = request.POST.get("role")
+
+    if nouveau_role in dict(Utilisateur.ROLES):
+        utilisateur.role = nouveau_role
+        utilisateur.save()
+
+    return redirect("liste_utilisateurs")
+
+
+@login_required
+def supprimer_utilisateur(request, utilisateur_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("Vous n'avez pas la permission.")
+
+    utilisateur = get_object_or_404(Utilisateur, id=utilisateur_id)
+    if utilisateur != request.user:  # sécurité pour ne pas se supprimer soi-même
+        utilisateur.delete()
+
+    return redirect("liste_utilisateurs")
+
+
 #  Vue pour la déconnexion
 def deconnexion(request):
     logout(request)
@@ -58,10 +99,10 @@ def deconnexion(request):
 def dashboard_admin(request):
     produits = Produit.objects.all()
     categories = Categorie.objects.all()
-    users = User.objects.all()
+    users = get_user_model().objects.all()
     form = ProduitForm()
 
-    # Vérifie si on veut filtrer les produits à stock faible
+    # Filtre stock faible
     stock = request.GET.get("stock")
     if stock == "faible":
         produits = produits.filter(stock__lte=5)
@@ -73,10 +114,8 @@ def dashboard_admin(request):
 
     if query:
         produits = produits.filter(Q(nom__icontains=query) | Q(description__icontains=query))
-
     if categorie_id:
         produits = produits.filter(categorie_id=categorie_id)
-
     if tri == "nom_asc":
         produits = produits.order_by("nom")
     elif tri == "nom_desc":
@@ -97,17 +136,17 @@ def dashboard_admin(request):
     # Statistiques
     stats = {
         'nb_produits': produits.count(),
-        'nb_commandes': 0,
+        'nb_commandes': Commande.objects.count(),
         'nb_users': users.count(),
         'nb_alertes': AlerteStock.objects.count()
     }
 
-    # Graphique stock par produit (non paginé, sans filtre)
+    # === GRAPH PRODUITS ===
     tous_les_produits = Produit.objects.all()
     labels = [p.nom for p in tous_les_produits]
-    stocks = [p.quantite_stock for p in tous_les_produits]
+    stocks = [p.stock for p in tous_les_produits]
     colors = [
-        'rgba(255, 99, 132, 0.7)' if p.quantite_stock <= 5 else 'rgba(54, 162, 235, 0.7)'
+        'rgba(255, 99, 132, 0.7)' if p.stock <= 5 else 'rgba(54, 162, 235, 0.7)'
         for p in tous_les_produits
     ]
 
@@ -118,16 +157,23 @@ def dashboard_admin(request):
         'form': form,
         'image_form': ImageProduitForm(),
         'alerte_popup': alerte_popup,
-        'labels': labels,
-        'stocks': stocks,
-        'colors': colors,
+        'labels': json.dumps(labels),
+        'stocks': json.dumps(stocks),
+        'colors': json.dumps(colors),
     }
 
     return render(request, "users/dashboard_admin.html", context)
 
 
 
-
 def dashboard_client(request):
     return render(request, "users/dashboard_client.html") 
+
+
+@login_required
+def historique_actions(request):
+    historique = HistoriqueProduit.objects.select_related('utilisateur', 'produit').order_by('-date_action')
+    return render(request, "admin/historique_actions.html", {
+        "historique": historique
+    })
 

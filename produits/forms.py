@@ -1,5 +1,5 @@
 from django import forms
-from .models import Produit, ImageProduit
+from .models import Produit, ImageProduit, Commande
 
 # Formulaire pour la création/modification des produits
 class ProduitForm(forms.ModelForm):
@@ -13,4 +13,11 @@ class ImageProduitForm(forms.ModelForm):
         model = ImageProduit
         fields = ['image']
 
-
+class CommandeForm(forms.ModelForm):
+    class Meta:
+        model = Commande
+        fields = ['produit', 'quantite']
+        widgets = {
+            'produit': forms.Select(attrs={'class': 'form-control'}),
+            'quantite': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        }

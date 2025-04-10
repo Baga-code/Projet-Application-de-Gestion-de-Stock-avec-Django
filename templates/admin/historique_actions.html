@@ -1,0 +1,57 @@
+{% extends "base/index.html" %}
+{% block title %}Historique des actions{% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-header text-white text-center py-4" style="background: linear-gradient(90deg, #4e73df 0%, #1cc88a 100%);">
+            <h4 class="fw-bold mb-0">🕒 Historique des actions sur les produits</h4>
+        </div>
+        
+
+        <div class="card-body p-4">
+            {% if historique %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Utilisateur</th>
+                                <th scope="col">Action</th>
+                                <th scope="col">Produit concerné</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in historique %}
+                                <tr>
+                                    <td>{{ entry.date_action|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ entry.utilisateur.username }}</td>
+                                    <td>
+                                        {% if entry.action == "ajout" %}
+                                            <span class="badge bg-success">Ajout</span>
+                                        {% elif entry.action == "modification" %}
+                                            <span class="badge bg-warning text-dark">Modification</span>
+                                        {% elif entry.action == "suppression" %}
+                                            <span class="badge bg-danger">Suppression</span>
+                                        {% elif entry.action == "exporter en CSV" %}
+                                            <span class="badge bg-info text-dark">Export CSV</span>
+                                        {% elif entry.action == "exporter en PDF" %}
+                                            <span class="badge bg-primary">Export PDF</span>
+                                        {% else %}
+                                            {{ entry.action }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ entry.produit.nom }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">Aucune action enregistrée pour l’instant.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

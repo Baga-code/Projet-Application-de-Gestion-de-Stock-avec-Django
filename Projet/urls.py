@@ -6,7 +6,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('produit/', include('produits.urls')),
-    path('', include('users.urls')),  # L'app d'authentification (connexion, inscription, etc.)
+    path('', include('users.urls')),  
 ]
 
 # Gérer les fichiers média (photos de produit, photos de profil, etc.)

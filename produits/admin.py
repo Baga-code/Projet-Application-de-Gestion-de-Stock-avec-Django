@@ -31,3 +31,10 @@ class AlerteStockAdmin(admin.ModelAdmin):
     list_filter = ('date_alerte',)
     search_fields = ('produit__nom',)
     readonly_fields = ('produit', 'stock_actuel', 'date_alerte')  # Rendre ces champs en lecture seule
+
+
+@admin.register(Commande)
+class CommandeAdmin(admin.ModelAdmin):
+    list_display = ('utilisateur', 'produit', 'quantite', 'date_commande')
+    list_filter = ('date_commande',)
+ 

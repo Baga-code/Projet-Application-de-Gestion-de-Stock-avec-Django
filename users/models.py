@@ -18,5 +18,16 @@ class Utilisateur(AbstractUser):
     date_de_naissance = models.DateField(blank=True, null=True)
     photo_profil = models.ImageField(upload_to="photos_profils/", blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        # Synchronisation role-admin ↔ superuser
+        if self.role == self.ADMIN:
+            self.is_superuser = True
+            self.is_staff = True
+        else:
+            self.is_superuser = False  
+            self.is_staff = False
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.username} ({self.role})"

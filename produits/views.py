@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect , get_object_or_404, HttpResponse
-from .forms import ProduitForm, ImageProduitForm
+from .forms import ProduitForm, ImageProduitForm, CommandeForm
 from .models import *
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -9,13 +9,13 @@ from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
-
+from django.contrib.auth.decorators import login_required
 
  
 def ajouter_produit(request):
     if not request.user.is_superuser:
         messages.error(request, "Accès non autorisé.")
-        return redirect("liste_produits")
+        return redirect("")
 
     if request.method == "POST":
         form = ProduitForm(request.POST)
@@ -44,7 +44,7 @@ def ajouter_produit(request):
                 )
 
             messages.success(request, "Produit ajouté avec succès ✅ .")
-            return redirect("liste_produits")
+            return redirect("dashboard_admin")
 
         messages.error(request, "Erreur dans le formulaire.")
 
@@ -56,59 +56,6 @@ def ajouter_produit(request):
         "form": form,
         "image_form": image_form
     })
-
-def liste_produits(request):
-
-    stock = request.GET.get("stock")  
-
-    if stock == "faible":
-        produits_list = Produit.objects.filter(stock__lte=5).order_by('id')
-    else:
-        produits_list = Produit.objects.all().order_by('id')
-
-    paginator = Paginator(produits_list, 5)
-    page = request.GET.get('page')
-    produits = paginator.get_page(page)
-
-    form_produit = ProduitForm()
-    form_image = ImageProduitForm()
-    categories = Categorie.objects.all()
-
-    # Statistiques
-    User = get_user_model()
-    stats = {
-        'nb_produits': Produit.objects.count(),
-        'nb_commandes': 0,  
-        'nb_users': User.objects.count(),
-        'nb_alertes': AlerteStock.objects.count(),
-    }
-
-    # Données pour les graphes
-    labels = []
-    stocks = []
-    couleurs = []
-
-    for cat in categories:
-        total_stock = cat.produits.aggregate(stock=Sum('stock'))['stock'] or 0
-        labels.append(cat.nom)
-        stocks.append(total_stock)
-        couleurs.append("red" if total_stock < 5 else "#4e73df")
-
-# Condition pour afficher le popup (ne pas le réafficher après clic)
-    alerte_popup = AlerteStock.objects.count() > 0 and stock != "faible"
-
-    return render(request, 'users/dashboard_admin.html', {
-        'produits': produits,
-        'form_produit': form_produit,
-        'form_image': form_image,
-        'categories': categories,
-        'stats': stats,
-        'labels': json.dumps(labels),
-        'stocks': json.dumps(stocks),
-        'couleurs': json.dumps(couleurs),
-        'alerte_popup': alerte_popup, 
-    })
-
 
 
 def modifier_produit(request, produit_id):
@@ -135,7 +82,7 @@ def modifier_produit(request, produit_id):
             )
 
             messages.success(request, "Produit modifié avec succès ✅.")
-            return redirect('liste_produits')  
+            return redirect('dashboard_admin')  
     else:
         form = ProduitForm(instance=produit)
 
@@ -157,7 +104,7 @@ def supprimer_produit(request, produit_id):
         produit.delete()
         
         messages.success(request, f"Le produit '{nom_produit}' a été supprimé avec succès ✅.")
-        return redirect('liste_produits')
+        return redirect('dashboard_admin')
     return render(request, 'produits/supprimer.html', {'produit': produit})
 
 def export_csv(request):
@@ -165,7 +112,7 @@ def export_csv(request):
     response['Content-Disposition'] = 'attachment; filename="produits.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Nom', 'Prix', 'Stock'])  # Ajouter les champs souhaités
+    writer.writerow(['Nom', 'Prix', 'Stock'])  
 
     for produit in Produit.objects.all():
         writer.writerow([produit.nom, produit.prix, produit.stock])
@@ -179,7 +126,7 @@ def export_csv(request):
     return response
 
 def export_pdf(request):
-    produits = Produit.objects.all().order_by('id')  # Trier par ID croissant
+    produits = Produit.objects.all().order_by('id') 
     template_path = 'produits/pdf_template.html'
     context = {'produits': produits}
 
@@ -194,9 +141,42 @@ def export_pdf(request):
     # Génération du PDF
     pisa_status = pisa.CreatePDF(html, dest=response)
 
-    
-    
-
+    # Gestion des erreurs
     if pisa_status.err:
         return HttpResponse('Erreur lors de la génération du PDF', status=500)
     return response
+
+
+
+@login_required
+def passer_commande(request):
+    if request.method == 'POST':
+        form = CommandeForm(request.POST)
+        if form.is_valid():
+            produit = form.cleaned_data['produit']
+            quantite = form.cleaned_data['quantite']
+
+            if produit.stock >= quantite:
+                # Mise à jour du stock
+                produit.stock -= quantite
+                produit.save()
+
+                # Enregistrement de la commande
+                commande = form.save(commit=False)
+                commande.utilisateur = request.user
+                commande.save()
+
+                messages.success(request, f"✅ Commande de {quantite} x {produit.nom} enregistrée avec succès.")
+                return redirect('dashboard_admin')
+            else:
+                messages.warning(request, f"❌ Stock insuffisant : il ne reste que {produit.stock} unités de {produit.nom}.")
+    else:
+        form = CommandeForm()
+
+    return render(request, 'commandes/passer_commande.html', {'form': form})
+
+
+ 
+def liste_commandes(request):
+    commandes = Commande.objects.filter(utilisateur=request.user).order_by('-date_commande')
+    return render(request, 'commandes/liste_commande.html', {'commandes': commandes})

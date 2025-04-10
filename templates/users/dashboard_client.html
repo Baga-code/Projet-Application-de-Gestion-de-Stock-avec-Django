@@ -1,7 +1,33 @@
 {% extends "base/index.html" %}
+{% block title %}Page client{% endblock %}
 
 {% block content %}
-  <h2>Bienvenue sur votre espace client</h2>
-  <p>Vous avez accès à votre espace personnel.</p>
-  <a href="{% url 'deconnexion' %}">Déconnexion</a>
+<div class="card shadow-sm p-4 border-0 rounded-4 bg-light">
+    <div class="card-body">
+        <h2 class="text-center mb-4 text-success fw-bold">
+            Bienvenue sur votre espace client
+        </h2>
+
+        <p class="lead text-muted">
+            Bonjour <strong class="text-dark">{{ user.name }}</strong>,
+        </p>
+
+        <p class="mb-3">
+            Malheureusement, par défaut de temps, nous n'avons pas pu développer cette page comme prévu. Elle était initialement conçue pour permettre aux clients de :
+        </p>
+
+        <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item">🛒 Naviguer et ajouter des produits au panier</li>
+            <li class="list-group-item">📦 Passer commande</li>
+            <li class="list-group-item">🔍 Suivre leur commande</li>
+            <li class="list-group-item">📜 Consulter leur historique</li>
+        </ul>
+
+        <p class="mb-4">
+            Merci de votre compréhension. Veuillez vous connecter en tant qu’<strong>administrateur</strong> pour accéder au tableau de bord.
+        </p>
+
+        
+    </div>
+</div>
 {% endblock %}

@@ -1,20 +1,8 @@
 
 {% extends 'base/index.html' %}
+{% block title %}Tableau de bord {% endblock %}
 {% load static %}
 
-<style>
-@media (max-width: 768px) {
-  .table td {
-    font-size: 0.85rem;
-  }
-  .carousel-inner {
-    max-width: 100px !important;
-  }
-  .carousel-inner img {
-    max-height: 80px !important;
-  }
-}
-</style>
 
 {% block content %}
 {% include 'produits/ajout.html' with form=form image_form=image_form %}
@@ -156,7 +144,7 @@
                     <th>Catégorie</th>
                     <th>Prix</th>
                     <th>Stock</th>
-                    {% if user.is_superuser %}<th>Actions</th>{% endif %}
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -238,16 +226,25 @@
           </ul>
       </nav>
   </div>
-  <div class="container my-5 d-flex justify-content-center">
-    <div class="card shadow-lg p-4 w-100" style="max-width: 800px;">
-      <h5 class="text-center mb-4">Stock actuel par produit</h5>
-      <canvas id="stockChart"
+  <div class="card shadow-lg rounded-4 border-0 mb-4">
+    <div class="card-header py-4 text-white text-center" style="background: linear-gradient(90deg, #4e73df 0%, #1cc88a 100%);">
+      <h5 class="m-0 fw-bold">
+        📊 Stock des produits
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <canvas id="graphiqueProduits"
         data-labels='{{ labels|safe }}'
         data-stocks='{{ stocks|safe }}'
         data-colors='{{ colors|safe }}'>
-        </canvas>
+      </canvas>
     </div>
   </div>
+  
+  
+
+  
+  
   
 </div>
 {% block scripts %}
@@ -265,10 +262,9 @@
     }
   });
 </script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script src="{% static 'js/dashbord.js' %}"></script>
 
+  
 {% endblock %}
 {% endblock %}
